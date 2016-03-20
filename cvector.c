@@ -65,10 +65,9 @@ void CVectorInsert(CVector *v, const void *elemAddr, int index)
   assert((index >= 0) && (index <= v->logLength));
   if(v->logLength == v->allocLength)
     vectorGrow(v);
-  memmove((char*)v->elems + ((index+1) * v->elemSize),
-    (char*)v->elems + (index * v->elemSize),
-	(v->logLength - index) * v->elemSize);
-  memcpy((char*)v->elems + (index * v->elemSize), elemAddr, v->elemSize);
+  memmove(CVectorNth(v, index+1), CVectorNth(v, index),
+	  (v->logLength - index) * v->elemSize);
+  memcpy(CVectorNth(v, index), elemAddr, v->elemSize);
   v->logLength++;
 }
 
@@ -77,7 +76,7 @@ void CVectorAppend(CVector *v, const void *elemAddr)
   assert(elemAddr != NULL);
   if(v->logLength == v->allocLength)
     vectorGrow(v);
-  memcpy((char*)v->elems + (v->logLength * v->elemSize), elemAddr, v->elemSize);
+  memcpy(CVectorNth(v, v->logLength), elemAddr, v->elemSize);
   v->logLength++;
 }
 
@@ -85,7 +84,7 @@ void CVectorReplace(CVector *v, const void *elemAddr, int index)
 {
   assert(elemAddr != NULL);
   assert(index < v->allocLength);
-  memcpy((char*)v->elems + (v->elemSize * index), elemAddr, v->elemSize);
+  memcpy(CVectorNth(v, index), elemAddr, v->elemSize);
 }
 
 void CVectorRemove(CVector *v, int index)
@@ -93,25 +92,26 @@ void CVectorRemove(CVector *v, int index)
   assert((index >= 0) && (index < v->logLength));
   if(v->cleanupFn != NULL)
 	  v->cleanupFn((char*)v->elems + (index * v->elemSize));
-  memmove((char*)v->elems + (index * v->elemSize), (char*)v->elems + ((index+1) * v->elemSize),
+  memmove(CVectorNth(v, index), CVectorNth(v, index+1),
     (v->logLength - index) * v->elemSize);
   v->logLength--;
 }
 
-int CVectorSearch(const CVector *v, const void *key, CVectorCmpElemFn comparefn, int startIndex, bool isSorted)
+int CVectorSearch(const CVector *v, const void *key, CVectorCmpElemFn comparefn,
+  int startIndex, bool isSorted)
 {
   assert(startIndex >= 0 && startIndex <= v->logLength);
   assert(comparefn != NULL);
   int position = -1;
   if(isSorted)
   {
-  	void *res = bsearch(key, (char*)v->elems + (startIndex * v->elemSize), (v->logLength - startIndex),
+  	void *res = bsearch(key, CVectorNth(v, startIndex), (v->logLength - startIndex),
   	  v->elemSize, comparefn);
   	if(res != NULL)
   	{
       int i;
   		for(i = startIndex ; i < v->logLength ; i++){
-  			if(res == ((char*)v->elems + (i * v->elemSize))){
+  			if(res == CVectorNth(v, i)){
   				position = i;
   			  break;
   			}
@@ -122,7 +122,7 @@ int CVectorSearch(const CVector *v, const void *key, CVectorCmpElemFn comparefn,
   {
     int i;
   	for(i = startIndex ; i < v->logLength ; i++){
-  		if(memcmp(key, (char*)v->elems + (i * v->elemSize), v->elemSize) == 0){
+  		if(memcmp(key, CVectorNth(v, i), v->elemSize) == 0){
   			position = i;
   			break;
   		}
@@ -140,7 +140,6 @@ void CVectorMap(CVector *v, CVectorMapElemFn mapfn, void *auxData)
 {
   assert(mapfn != NULL);
   int i;
-  for(i = 0 ; i < v->logLength ; i++){
-	  mapfn((char*)v->elems + (i * v->elemSize), auxData);
-  }
+  for(i = 0 ; i < v->logLength ; i++)
+	  mapfn(CVectorNth(v, i), auxData);
 }
