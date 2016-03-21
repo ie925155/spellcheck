@@ -4,17 +4,21 @@
 #include <string.h>
 #include <assert.h>
 
+typedef struct _Cell_ {
+  struct Cell *next;
+} Cell;
+
+typedef struct _bucket_{
+   Cell *next;
+} Bucket;
+
 struct CMapImplementation{
-  void *buckets;
+  Bucket *buckets;
   int valueSize;
   int numBuckets;
   int elemCount;
   CMapCleanupValueFn cleanupFn;
 };
-
-typedef struct _Cell_ {
-  struct Cell *next;
-} Cell;
 
 /* use djb2 algorithm */
 static int hashCode(const char *str)
@@ -30,8 +34,12 @@ CMap *CMapCreate(int valueSize, int capacityHint, CMapCleanupValueFn cleanupFn)
 {
   CMap *cm = (CMap*) malloc(sizeof(struct CMapImplementation));
   assert(cm != NULL);
-  cm->buckets = malloc(sizeof(Cell)*capacityHint);
-  memset(cm->buckets, 0x00, sizeof(Cell)*capacityHint);
+  cm->buckets = (Bucket*)malloc(sizeof(Bucket)*capacityHint);
+  int i;
+  for(i = 0 ; i < capacityHint ; i++){
+    Bucket bucket = {0x00};
+    memcpy(cm->buckets + i, &bucket, sizeof(Bucket));
+  }
   cm->valueSize = valueSize;
   cm->numBuckets = capacityHint;
   cm->elemCount = 0;
@@ -53,17 +61,18 @@ void CMapPut(CMap *cm, const char *key, const void *valueAddr)
   int index = hashCode(key) % cm->numBuckets;
   void *blob = malloc(sizeof(Cell) + (strlen(key)+1) + cm->valueSize);
   assert(blob != NULL);
-  Cell *head = (Cell*)(char*)cm->buckets + (index * sizeof(Cell));
-  while(head->next != NULL){
-    head = head->next;
-    if(strcmp(key, (char*)head + sizeof(Cell)) == 0){
-      void *value = (char*)head+sizeof(Cell)+strlen((char*)head+sizeof(Cell))+1;
+  Bucket *head = cm->buckets + index;
+  Cell *cell = head->next;
+  while(cell->next != NULL){
+    if(strcmp(key, (char*)cell + sizeof(Cell)) == 0){
+      void *value = (char*)cell+sizeof(Cell)+strlen((char*)cell+sizeof(Cell))+1;
       cm->cleanupFn(value);
-      memcpy(value, valueAddr, cm->elemSize);
+      memcpy(value, valueAddr, cm->valueSize);
       return;
     }
   }
-  head->next = blob;
+  cell->next = blob;
+  memset(blob, 0x00, sizeof(Cell));
   memcpy((char*)blob + sizeof(Cell), key, strlen(key)+1);
   memcpy((char*)blob + sizeof(Cell) + strlen(key)+1, valueAddr, cm->valueSize);
   cm->elemCount++;
