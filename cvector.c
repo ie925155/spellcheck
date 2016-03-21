@@ -41,8 +41,7 @@ void CVectorDispose(CVector *v)
   assert(v != NULL);
   assert(v->elems != NULL);
   if(v->cleanupFn != NULL){
-    int i;
-    for(i = 0 ; i < v->logLength ; i++)
+    for(int i = 0 ; i < v->logLength ; i++)
       v->cleanupFn(CVectorNth(v, i));
   }
   free(v->elems);
@@ -109,8 +108,7 @@ int CVectorSearch(const CVector *v, const void *key, CVectorCmpElemFn comparefn,
   	  v->elemSize, comparefn);
   	if(res != NULL)
   	{
-      int i;
-  		for(i = startIndex ; i < v->logLength ; i++){
+  		for(int i = startIndex ; i < v->logLength ; i++){
   			if(res == CVectorNth(v, i)){
   				position = i;
   			  break;
@@ -120,8 +118,7 @@ int CVectorSearch(const CVector *v, const void *key, CVectorCmpElemFn comparefn,
   }
   else
   {
-    int i;
-  	for(i = startIndex ; i < v->logLength ; i++){
+  	for(int i = startIndex ; i < v->logLength ; i++){
   		if(memcmp(key, CVectorNth(v, i), v->elemSize) == 0){
   			position = i;
   			break;
@@ -139,7 +136,6 @@ void CVectorSort(CVector *v, CVectorCmpElemFn comparefn)
 void CVectorMap(CVector *v, CVectorMapElemFn mapfn, void *auxData)
 {
   assert(mapfn != NULL);
-  int i;
-  for(i = 0 ; i < v->logLength ; i++)
+  for(int i = 0 ; i < v->logLength ; i++)
 	  mapfn(CVectorNth(v, i), auxData);
 }
