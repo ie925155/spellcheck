@@ -11,9 +11,9 @@ struct CMapImplementation{
   CMapCleanupValueFn cleanupFn;
 };
 
-typedef struct _Node_ {
-  struct Node *next;
-} Node;
+typedef struct _Cell_ {
+  struct Cell *next;
+} Cell;
 
 /* use djb2 algorithm */
 static int hashCode(const char *str)
@@ -29,8 +29,8 @@ CMap *CMapCreate(int valueSize, int capacityHint, CMapCleanupValueFn cleanupFn)
 {
   CMap *cm = (CMap*) malloc(sizeof(struct CMapImplementation));
   assert(cm != NULL);
-  cm->buckets = malloc(sizeof(Node*)*capacityHint);
-  memset(cm->buckets, 0x00, sizeof(Node*)*capacityHint);
+  cm->buckets = malloc(sizeof(Cell)*capacityHint);
+  memset(cm->buckets, 0x00, sizeof(Cell)*capacityHint);
   cm->valueSize = valueSize;
   cm->numBuckets = capacityHint;
   cm->cleanupFn = cleanupFn;
@@ -47,12 +47,14 @@ int CMapCount(const CMap *cm)
 void CMapPut(CMap *cm, const char *key, const void *valueAddr)
 {
   int index = hashCode(key) % cm->numBuckets;
-  void *cell = malloc(sizeof(Node*) + (strlen(key)+1) + cm->valueSize);
-  assert(cell != NULL);
-  Node *head = (Node*)(char*)cm->buckets + (index * sizeof(Node*));
+  void *blob = malloc(sizeof(Cell) + (strlen(key)+1) + cm->valueSize);
+  assert(blob != NULL);
+  Cell *head = (Cell*)(char*)cm->buckets + (index * sizeof(Cell));
   while(head->next != NULL)
     head = head->next;
-  head->next = head;
+  head->next = blob;
+  memcpy(blob + sizeof(Cell), key, strlen(key)+1);
+  memcpy(blob + sizeof(Cell) + strlen(key) + 1, valueAddr, cm->valueSize);
 }
 
 void *CMapGet(const CMap *cm, const char * key)
