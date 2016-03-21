@@ -8,6 +8,7 @@ struct CMapImplementation{
   void *buckets;
   int valueSize;
   int numBuckets;
+  int elemCount;
   CMapCleanupValueFn cleanupFn;
 };
 
@@ -33,6 +34,7 @@ CMap *CMapCreate(int valueSize, int capacityHint, CMapCleanupValueFn cleanupFn)
   memset(cm->buckets, 0x00, sizeof(Cell)*capacityHint);
   cm->valueSize = valueSize;
   cm->numBuckets = capacityHint;
+  cm->elemCount = 0;
   cm->cleanupFn = cleanupFn;
   assert(cm->buckets != NULL);
   return cm;
@@ -42,7 +44,9 @@ void CMapDispose(CMap *cm)
 {}
 
 int CMapCount(const CMap *cm)
-{return 0;}
+{
+  return cm->elemCount;
+}
 
 void CMapPut(CMap *cm, const char *key, const void *valueAddr)
 {
@@ -55,6 +59,7 @@ void CMapPut(CMap *cm, const char *key, const void *valueAddr)
   head->next = blob;
   memcpy(blob + sizeof(Cell), key, strlen(key)+1);
   memcpy(blob + sizeof(Cell) + strlen(key) + 1, valueAddr, cm->valueSize);
+  cm->elemCount++;
 }
 
 void *CMapGet(const CMap *cm, const char * key)
