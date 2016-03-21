@@ -54,11 +54,18 @@ void CMapPut(CMap *cm, const char *key, const void *valueAddr)
   void *blob = malloc(sizeof(Cell) + (strlen(key)+1) + cm->valueSize);
   assert(blob != NULL);
   Cell *head = (Cell*)(char*)cm->buckets + (index * sizeof(Cell));
-  while(head->next != NULL)
+  while(head->next != NULL){
     head = head->next;
+    if(strcmp(key, (char*)head + sizeof(Cell)) == 0){
+      void *value = (char*)head+sizeof(Cell)+strlen((char*)head+sizeof(Cell))+1;
+      cm->cleanupFn(value);
+      memcpy(value, valueAddr, cm->elemSize);
+      return;
+    }
+  }
   head->next = blob;
-  memcpy(blob + sizeof(Cell), key, strlen(key)+1);
-  memcpy(blob + sizeof(Cell) + strlen(key) + 1, valueAddr, cm->valueSize);
+  memcpy((char*)blob + sizeof(Cell), key, strlen(key)+1);
+  memcpy((char*)blob + sizeof(Cell) + strlen(key)+1, valueAddr, cm->valueSize);
   cm->elemCount++;
 }
 
