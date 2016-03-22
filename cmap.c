@@ -4,12 +4,12 @@
 #include <string.h>
 #include <assert.h>
 
-typedef struct _Cell_ {
+struct Cell {
   struct Cell *next;
-} Cell;
+};
 
-typedef struct _bucket_{
-   Cell *next;
+typedef struct {
+   struct Cell *next;
 } Bucket;
 
 struct CMapImplementation{
@@ -35,8 +35,7 @@ CMap *CMapCreate(int valueSize, int capacityHint, CMapCleanupValueFn cleanupFn)
   CMap *cm = (CMap*) malloc(sizeof(struct CMapImplementation));
   assert(cm != NULL);
   cm->buckets = (Bucket*)malloc(sizeof(Bucket)*capacityHint);
-  int i;
-  for(i = 0 ; i < capacityHint ; i++){
+  for(int i = 0 ; i < capacityHint ; i++){
     Bucket bucket = {0x00};
     memcpy(cm->buckets + i, &bucket, sizeof(Bucket));
   }
@@ -59,27 +58,40 @@ int CMapCount(const CMap *cm)
 void CMapPut(CMap *cm, const char *key, const void *valueAddr)
 {
   int index = hashCode(key) % cm->numBuckets;
-  void *blob = malloc(sizeof(Cell) + (strlen(key)+1) + cm->valueSize);
+  void *blob = malloc(sizeof(struct Cell) + (strlen(key)+1) + cm->valueSize);
   assert(blob != NULL);
   Bucket *head = cm->buckets + index;
-  Cell *cell = head->next;
-  while(cell->next != NULL){
-    if(strcmp(key, (char*)cell + sizeof(Cell)) == 0){
-      void *value = (char*)cell+sizeof(Cell)+strlen((char*)cell+sizeof(Cell))+1;
+  struct Cell *cell = head->next;
+  while(cell != NULL){
+    if(strcmp(key, (char*)cell + sizeof(struct Cell)) == 0){
+      void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
       cm->cleanupFn(value);
       memcpy(value, valueAddr, cm->valueSize);
       return;
     }
+    cell = cell->next;
   }
-  cell->next = blob;
-  memset(blob, 0x00, sizeof(Cell));
-  memcpy((char*)blob + sizeof(Cell), key, strlen(key)+1);
-  memcpy((char*)blob + sizeof(Cell) + strlen(key)+1, valueAddr, cm->valueSize);
+  cell = blob;
+  memset(blob, 0x00, sizeof(struct Cell));
+  memcpy((char*)blob + sizeof(struct Cell), key, strlen(key)+1);
+  memcpy((char*)blob + sizeof(struct Cell) + strlen(key)+1, valueAddr, cm->valueSize);
   cm->elemCount++;
 }
 
 void *CMapGet(const CMap *cm, const char * key)
-{return NULL;}
+{
+  for(int i = 0 ; i < cm->numBuckets ; i++){
+    Bucket *bucket = cm->buckets + i;
+    struct Cell *cell = bucket->next;
+    while(cell != NULL){
+      if(strcmp(key, (char*)cell + sizeof(struct Cell)) == 0){
+          return (char*)cell + sizeof(struct Cell) + strlen((char*)cell + sizeof(struct Cell)) + 1;
+      }
+      cell = cell->next;
+    }
+  }
+  return NULL;
+}
 
 void CMapRemove(CMap *cm, const char * key)
 {};
