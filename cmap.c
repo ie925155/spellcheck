@@ -129,4 +129,15 @@ void CMapRemove(CMap *cm, const char * key)
 };
 
 void CMapMap(CMap *cm, CMapMapEntryFn mapfn, void *auxData)
-{};
+{
+  for(int i = 0 ; i < cm->numBuckets ; i++){
+    Bucket *bucket = cm->buckets + i;
+    struct Cell *cell = bucket->next;
+    while(cell != NULL){
+        void *key = (char*)cell + sizeof(struct Cell);
+        void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
+        cm->mapfn(key, value, auxdata);
+        cell = cell->next;
+    }
+  }
+};
