@@ -136,7 +136,7 @@ void CMapMap(CMap *cm, CMapMapEntryFn mapfn, void *auxData)
     while(cell != NULL){
         void *key = (char*)cell + sizeof(struct Cell);
         void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
-        cm->mapfn(key, value, auxdata);
+        mapfn(key, value, auxData);
         cell = cell->next;
     }
   }
