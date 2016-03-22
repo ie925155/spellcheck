@@ -48,7 +48,21 @@ CMap *CMapCreate(int valueSize, int capacityHint, CMapCleanupValueFn cleanupFn)
 }
 
 void CMapDispose(CMap *cm)
-{}
+{
+  for(int i = 0 ; i < cm->numBuckets ; i++){
+    Bucket *bucket = cm->buckets + i;
+    struct Cell *cell = bucket->next;
+    while(cell != NULL){
+      void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
+      if(cm->cleanupFn != NULL)
+        cm->cleanupFn(value);
+      struct Cell *temp = cell;
+      cell = cell->next;
+      free(temp);
+    }
+  }
+  free(cm->buckets);
+}
 
 int CMapCount(const CMap *cm)
 {
