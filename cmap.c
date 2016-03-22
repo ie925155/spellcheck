@@ -65,7 +65,8 @@ void CMapPut(CMap *cm, const char *key, const void *valueAddr)
   while(cell != NULL){
     if(strcmp(key, (char*)cell + sizeof(struct Cell)) == 0){
       void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
-      cm->cleanupFn(value);
+      if(cm->cleanupFn != NULL)
+        cm->cleanupFn(value);
       memcpy(value, valueAddr, cm->valueSize);
       return;
     }
@@ -94,7 +95,24 @@ void *CMapGet(const CMap *cm, const char * key)
 }
 
 void CMapRemove(CMap *cm, const char * key)
-{};
+{
+  for(int i = 0 ; i < cm->numBuckets ; i++){
+    Bucket *bucket = cm->buckets + i;
+    struct Cell *cell = bucket->next;
+    while(cell != NULL){
+      if(strcmp(key, (char*)cell + sizeof(struct Cell)) == 0){
+        if(cm->cleanupFn != NULL){
+          void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
+          cm->cleanupFn(value);
+        }
+        free(cell);
+        bucket->next = NULL;
+        return;
+      }
+      cell = cell->next;
+    }
+  }
+};
 
 void CMapMap(CMap *cm, CMapMapEntryFn mapfn, void *auxData)
 {};
