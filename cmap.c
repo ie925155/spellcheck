@@ -21,12 +21,12 @@ struct CMapImplementation{
 };
 
 /* use djb2 algorithm */
-static int hashCode(const char *str)
+static unsigned int hashCode(const char *str)
 {
   unsigned long hash = 5381;
   int c;
-  while(c = *str++)
-    hash = ((hash << 5) + hash) + c; /* hash *33 + c */
+  while((c = *str++))
+    hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
   return (hash & 0xFFFFFFFF);
 }
 
@@ -74,8 +74,8 @@ void CMapPut(CMap *cm, const char *key, const void *valueAddr)
   int index = hashCode(key) % cm->numBuckets;
   void *blob = malloc(sizeof(struct Cell) + (strlen(key)+1) + cm->valueSize);
   assert(blob != NULL);
-  Bucket *head = cm->buckets + index;
-  struct Cell *cell = head->next;
+  Bucket *bucket = cm->buckets + index;
+  struct Cell *cell = bucket->next;
   while(cell != NULL){
     if(strcmp(key, (char*)cell + sizeof(struct Cell)) == 0){
       void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
@@ -84,9 +84,17 @@ void CMapPut(CMap *cm, const char *key, const void *valueAddr)
       memcpy(value, valueAddr, cm->valueSize);
       return;
     }
+    if(cell->next == NULL){
+      cell->next = blob;
+      memset(blob, 0x00, sizeof(struct Cell));
+      memcpy((char*)blob + sizeof(struct Cell), key, strlen(key)+1);
+      memcpy((char*)blob + sizeof(struct Cell) + strlen(key)+1, valueAddr, cm->valueSize);
+      cm->elemCount++;
+      return;
+    }
     cell = cell->next;
   }
-  cell = blob;
+  bucket->next = blob;
   memset(blob, 0x00, sizeof(struct Cell));
   memcpy((char*)blob + sizeof(struct Cell), key, strlen(key)+1);
   memcpy((char*)blob + sizeof(struct Cell) + strlen(key)+1, valueAddr, cm->valueSize);
@@ -113,6 +121,8 @@ void CMapRemove(CMap *cm, const char * key)
   for(int i = 0 ; i < cm->numBuckets ; i++){
     Bucket *bucket = cm->buckets + i;
     struct Cell *cell = bucket->next;
+    struct Cell *prev = NULL;
+    struct Cell *next = (cell == NULL) ? NULL : cell->next;
     while(cell != NULL){
       if(strcmp(key, (char*)cell + sizeof(struct Cell)) == 0){
         if(cm->cleanupFn != NULL){
@@ -120,13 +130,20 @@ void CMapRemove(CMap *cm, const char * key)
           cm->cleanupFn(value);
         }
         free(cell);
-        bucket->next = NULL;
+        if(prev == NULL){
+          bucket->next = next;
+        }else{
+          prev->next = next;
+        }
+        cm->elemCount--;
         return;
       }
+      prev = cell;
       cell = cell->next;
+      if(cell != NULL) next = cell->next;
     }
   }
-};
+}
 
 void CMapMap(CMap *cm, CMapMapEntryFn mapfn, void *auxData)
 {
@@ -140,4 +157,4 @@ void CMapMap(CMap *cm, CMapMapEntryFn mapfn, void *auxData)
         cell = cell->next;
     }
   }
-};
+}
