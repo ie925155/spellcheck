@@ -72,6 +72,7 @@ int CMapCount(const CMap *cm)
 void CMapPut(CMap *cm, const char *key, const void *valueAddr)
 {
   int index = hashCode(key) % cm->numBuckets;
+  //printf("index=%d key=%s\n", index, key);
   void *blob = malloc(sizeof(struct Cell) + (strlen(key)+1) + cm->valueSize);
   assert(blob != NULL);
   Bucket *bucket = cm->buckets + index;
@@ -151,10 +152,10 @@ void CMapMap(CMap *cm, CMapMapEntryFn mapfn, void *auxData)
     Bucket *bucket = cm->buckets + i;
     struct Cell *cell = bucket->next;
     while(cell != NULL){
-        void *key = (char*)cell + sizeof(struct Cell);
-        void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
-        mapfn(key, value, auxData);
-        cell = cell->next;
+      void *key = (char*)cell + sizeof(struct Cell);
+      void *value = (char*)cell+sizeof(struct Cell)+strlen((char*)cell+sizeof(struct Cell))+1;
+      mapfn(key, value, auxData);
+      cell = cell->next;
     }
   }
 }
