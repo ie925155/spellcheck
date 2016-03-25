@@ -1,0 +1,6 @@
+spelltest.o: spelltest.c cmap.h
+cmap.o: cmap.c cmap.h
+cvector.o: cvector.c cvector.h
+cmap.o: cmap.c cmap.h
+vectortest.o: vectortest.c cvector.h
+cmaptest.o: cmaptest.c cmap.h bool.h
