@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <assert.h>
+#include <string.h>
 
 void mapScalar(const char *key, void *a, void *b) {
 	int x = *(int*)a;

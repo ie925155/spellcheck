@@ -4,29 +4,39 @@
 #include <ctype.h>
 #include "cmap.h"
 
+#define MAX_TOKEN_SIZE 31
+
 static void build_hashmap(FILE *fp_corpus, CMap *map);
 
 void printMap(const char *key, void *a, void *b)
 {
-	printf("%-15s %d\n", key, *(int*)a);
+	printf("%-30s %d\n", key, *(int*)a);
 }
 
 static void build_hashmap(FILE *fp_corpus, CMap *map)
 {
-  char ch, *ptr, token[32], reader[64] = {0x0};
-	int index = 0, *value, frequency;
-  while(fscanf(fp_corpus, "%s", reader) != EOF)
+  char ch, *ptr, token[MAX_TOKEN_SIZE], reader[MAX_TOKEN_SIZE] = {0x0};
+	int index, *value, frequency;
+	_Bool is_discard;
+  while(fscanf(fp_corpus, "%30s", reader) != EOF)
 	{
-		//if(strlen(reader) > 30) continue;
+		index = is_discard = 0;
 		ptr = reader;
 		while((ch = *ptr++) != '\0')
-			if(isalpha(ch)) token[index++] = ch;
+		{
+			if(isalpha(ch))
+			  token[index++] = tolower(ch);  //case-insensitivity
+			else{
+				is_discard = 1;
+				break;
+			}
+		}
+		if(is_discard) continue;
 		token[index] = '\0';
 		value = CMapGet(map, token);
 		frequency = (value == NULL) ? 1 : *value+1;
 		(value == NULL) ? CMapPut(map, token, &frequency)
 		                : CMapPut(map, token, &frequency);
-		index = 0;
   }
 }
 

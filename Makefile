@@ -11,7 +11,7 @@
 #	$(CC) -o $@ $^ $(CFLAGS)
 
 CC = gcc
-CFLAGS = -g -Wall -std=gnu99 -Wpointer-arith
+CFLAGS = -g -Wall -std=c99
 LDFLAGS =
 PURIFY = purify
 PFLAGS=  -demangle-program=/usr/pubsw/bin/c++filt -linker=/usr/bin/ld -best-effort
@@ -34,7 +34,7 @@ SPELLCHECK_OBJS = $(SPELLCHECK_SRCS:.c=.o)
 SRCS = $(SPELLCHECK_SRCS) $(VECTOR_SRCS) $(CMAP_SRCS) vectortest.c cmaptest.c
 HDRS = $(VECTOR_HDRS) $(CMAP_HDRS)
 
-EXECUTABLES = spell-test vector-test cmap-test
+EXECUTABLES = spellcheck vector-test cmap-test
 
 default: $(EXECUTABLES)
 
@@ -44,7 +44,7 @@ vector-test : Makefile.dependencies $(VECTOR_TEST_OBJS)
 cmap-test : Makefile.dependencies $(CMAP_TEST_OBJS)
 	$(CC) -o $@ $(CMAP_TEST_OBJS) $(LDFLAGS)
 
-spell-test : Makefile.dependencies $(SPELLCHECK_OBJS)
+spellcheck : Makefile.dependencies $(SPELLCHECK_OBJS)
 	$(CC) -o $@ $(SPELLCHECK_OBJS) $(LDFLAGS)
 
 # The dependencies below make use of make's default rules,
