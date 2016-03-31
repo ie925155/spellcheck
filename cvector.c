@@ -119,7 +119,7 @@ int CVectorSearch(const CVector *v, const void *key, CVectorCmpElemFn comparefn,
   else
   {
   	for(int i = startIndex ; i < v->logLength ; i++){
-  		if(memcmp(key, CVectorNth(v, i), v->elemSize) == 0){
+  		if(comparefn(key, CVectorNth(v, i)) == 0){
   			position = i;
   			break;
   		}

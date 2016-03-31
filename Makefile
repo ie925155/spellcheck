@@ -28,7 +28,7 @@ VECTOR_TEST_OBJS = $(VECTOR_TEST_SRCS:.c=.o)
 CMAP_TEST_SRCS = cmaptest.c $(CMAP_SRCS)
 CMAP_TEST_OBJS = $(CMAP_TEST_SRCS:.c=.o)
 
-SPELLCHECK_SRCS = spelltest.c $(CMAP_SRCS)
+SPELLCHECK_SRCS = spelltest.c $(CMAP_SRCS) cvector.c
 SPELLCHECK_OBJS = $(SPELLCHECK_SRCS:.c=.o)
 
 SRCS = $(SPELLCHECK_SRCS) $(VECTOR_SRCS) $(CMAP_SRCS) vectortest.c cmaptest.c

@@ -1,5 +1,6 @@
-spelltest.o: spelltest.c cmap.h
+spelltest.o: spelltest.c cmap.h cvector.h
 cmap.o: cmap.c cmap.h
+cvector.o: cvector.c cvector.h
 cvector.o: cvector.c cvector.h
 cmap.o: cmap.c cmap.h
 vectortest.o: vectortest.c cvector.h
