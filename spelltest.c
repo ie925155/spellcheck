@@ -9,7 +9,8 @@
 #define MAX_TOKEN_SIZE 31
 #define MAX_CORRECTION 5
 
-typedef struct {
+typedef struct
+{
 	const char *key;
 	int edit_distance;
 	int frequency;
@@ -19,12 +20,14 @@ CELL_INFO g_ed_info;
 _Bool g_is_stop = false;
 static int g_current_count = 0;
 
-typedef struct {
+typedef struct
+{
 	char *word_check;
 	CVector *leader_board;
 } CORRECTION_INFO;
 
-typedef struct {
+typedef struct
+{
 	CMap *map_corpus;
 	CVector *misspelling;
 	char *keepPtr[100];
@@ -183,7 +186,8 @@ static void find_best_corrections(CORPUS_INFO *corpus_info, CORRECTION_INFO *cor
 		printf("%s :", correction->word_check);
 		int count = CVectorCount(correction->leader_board);
 		CELL_INFO *info;
-		for(int i = 0 ; i < count ; i++){
+		for(int i = 0 ; i < count ; i++)
+		{
 			info = (CELL_INFO*)CVectorNth(correction->leader_board, i);
 			printf("%s ", info->key);
 		}
@@ -229,7 +233,8 @@ int main(int argc, char *argv[])
 		build_hashmap(fp_document, map_document);
   	CMapMap(map_document, find_misspelling, &corpus_info);
 		int misspelling_count = CVectorCount(corpus_info.misspelling);
-		for(int i = 0 ; i < misspelling_count ; i++){
+		for(int i = 0 ; i < misspelling_count ; i++)
+		{
 			correction.word_check = *(char**)CVectorNth(corpus_info.misspelling, i);
 			find_best_corrections(&corpus_info, &correction);
 		}
