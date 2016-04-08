@@ -1,6 +1,5 @@
 # spellchecker
 #What this program do?
-
 1. The program takes two arguments: the corpus file and the input to spell-check (the last
 argument can be either a document file or a single word).
 2. Tokenizes the corpus file and counts the word frequencies to build the model.
