@@ -62,6 +62,7 @@ void CMapDispose(CMap *cm)
     }
   }
   free(cm->buckets);
+  free(cm);
 }
 
 int CMapCount(const CMap *cm)
@@ -83,6 +84,7 @@ void CMapPut(CMap *cm, const char *key, const void *valueAddr)
       if(cm->cleanupFn != NULL)
         cm->cleanupFn(value);
       memcpy(value, valueAddr, cm->valueSize);
+      free(blob);
       return;
     }
     if(cell->next == NULL){

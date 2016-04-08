@@ -57,8 +57,8 @@ static void BuildTableOfLetterCounts(CMap *counts)
 	int max_count=0;
   int ch;
   //FILE *fp = fopen("cmaptest.c", "r"); // open self as file
-  //FILE *fp = fopen("/media/sheldon/DATA/Dropbox/cs107/Programming_Assignments/assn-3-vector-hashset-data/thesaurus.txt", "r"); // open self as file
-  FILE *fp = fopen("/mnt/hgfs/glay_luncy/Dropbox/cs107/Programming_Assignments/assn-3-vector-hashset-data/thesaurus.txt", "r"); // open self as file
+  FILE *fp = fopen("/media/sheldon/DATA/Dropbox/cs107/Programming_Assignments/assn-3-vector-hashset-data/thesaurus.txt", "r"); // open self as file
+  //FILE *fp = fopen("/mnt/hgfs/glay_luncy/Dropbox/cs107/Programming_Assignments/assn-3-vector-hashset-data/thesaurus.txt", "r"); // open self as file
   assert(fp != NULL);
 	int record=0;
 	bool recordFlag = false;
@@ -90,6 +90,7 @@ static void BuildTableOfLetterCounts(CMap *counts)
 int main() {
 	simpleTest();
 	CMap *map = CMapCreate(sizeof(int), 180000, NULL);
+	//CMap *map = CMapCreate(sizeof(int), 11, NULL);
 	BuildTableOfLetterCounts(map);
 	printf("total %d elements\n", CMapCount(map));
 	CMapDispose(map);

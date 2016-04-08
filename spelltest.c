@@ -237,5 +237,7 @@ int main(int argc, char *argv[])
 		CMapDispose(map_document);
 	}
 	CMapDispose(corpus_info.map_corpus);
+	if(fp_document != NULL) fclose(fp_document);
+	fclose(fp_corpus);
   return 0;
 }
